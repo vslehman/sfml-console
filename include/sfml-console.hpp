@@ -88,7 +88,7 @@ public:
 class SfmlConsole : public ConsoleApi
 {
 public:
-  SfmlConsole();
+  SfmlConsole(const sf::RenderWindow& window);
 
   virtual
   ~SfmlConsole(){};

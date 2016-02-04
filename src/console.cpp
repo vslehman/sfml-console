@@ -36,7 +36,7 @@ const char Console::CURSOR_CHARACTER = '_';
 //=============================================================================
 //  Console::Console()
 //-----------------------------------------------------------------------------
-Console::Console()
+Console::Console(const sf::RenderWindow& window)
   : m_isEnabled(false)
   , m_heightPercentage(0.25)
   , m_margin(4)
@@ -55,8 +55,7 @@ Console::Console()
   //font = &Font::getDefaultFont();
 
     // Initialize style
-  //sf::Vector2u windowSize = window.getSize();
-  sf::Vector2u windowSize;
+  sf::Vector2u windowSize = window.getSize();
 
   size_t fontSize = 16;
   m_visibleLines = (windowSize.y*m_heightPercentage)/fontSize;

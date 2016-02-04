@@ -39,7 +39,7 @@ class Console : public ConsoleApi
 public:
   typedef std::map<const std::string, Command> CommandMap;
 
-  Console();
+  Console(const sf::RenderWindow& window);
 
   virtual
   ~Console(){};

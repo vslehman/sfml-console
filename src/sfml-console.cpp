@@ -27,8 +27,8 @@
 
 namespace sfmlConsole {
 
-SfmlConsole::SfmlConsole()
-  : m_impl(new impl::Console)
+SfmlConsole::SfmlConsole(const sf::RenderWindow& window)
+  : m_impl(new impl::Console(window))
 {
 }
 

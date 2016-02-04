@@ -40,7 +40,7 @@ main(int argc, char* arv[])
 
   // Create SFML Console
   using sfmlConsole::SfmlConsole;
-  SfmlConsole console;
+  SfmlConsole console(window);
 
   // Register command "hello" which prints "world!" in the console
   console.registerCommand(
