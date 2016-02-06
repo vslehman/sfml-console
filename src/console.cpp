@@ -80,7 +80,7 @@ Console::Console(const sf::RenderWindow& window, const sf::Font& font)
   m_background.setPosition(m_margin, m_margin);
   m_background.setFillColor(m_backgroundColor);
 
-  m_visibleLines = (m_background.getSize().y - 3 * fontSize) / fontSize;
+  m_visibleLines = (m_background.getSize().y - fontSize) / fontSize;
 
   m_sfCurrentInput.setPosition(fontSize / 2 + fontSize, (windowSize.y * m_heightPercentage  - 2 * m_margin) - fontSize);
   m_sfCurrentInput.setCharacterSize(fontSize);
@@ -95,10 +95,6 @@ Console::Console(const sf::RenderWindow& window, const sf::Font& font)
   m_prompt.setString(">");
   m_prompt.setFont(font);
   m_prompt.setColor(sf::Color::White);
-
-  m_sfConsoleHistory.setPosition(fontSize, (windowSize.y * m_heightPercentage  - 2 * m_margin) - fontSize);
-  m_sfConsoleHistory.setCharacterSize(fontSize);
-  m_sfConsoleHistory.setFont(font);
 }
 
 //=============================================================================
@@ -162,22 +158,6 @@ void Console::update()
 {
 
   m_sfCurrentInput.setString(m_currentInput);
-  m_sfConsoleHistory.setPosition(2 * m_margin, 2 * m_margin);
-
-  int startPos = m_outputHistory.size() - m_visibleLines + 1;  // The 1 accounts for the current input
-
-  if (startPos < 0) {
-    startPos = 0;
-  }
-
-  std::string outputHistoryString;
-
-  int nLines = 0;
-  for (int i = startPos; i < m_outputHistory.size() && nLines < m_visibleLines; ++i, ++nLines) {
-    outputHistoryString += m_outputHistory.at(i) + "\n";
-  }
-
-  m_sfConsoleHistory.setString(outputHistoryString);
 
   // Calculate cursor offset and apply it to string
   m_cursorMask = "";
@@ -253,7 +233,15 @@ Console::isVisible() const
 //-----------------------------------------------------------------------------
 void Console::print(const std::string& msg)
 {
-  m_outputHistory.push_back(msg);
+  int fontSize = 16;
+
+  sf::Text text;
+  text.setCharacterSize(fontSize);
+  text.setString(msg);
+  text.setFont(m_font);
+  text.setColor(sf::Color::White);
+
+  m_outputHistory.push_back(text);
 }
 
 //=============================================================================
@@ -321,7 +309,26 @@ Console::draw(sf::RenderTarget& target, sf::RenderStates states) const
   target.draw(m_border);
   target.draw(m_background);
   target.draw(m_prompt);
-  target.draw(m_sfConsoleHistory);
+
+  sf::Vector2f borderPos = m_border.getPosition();
+  sf::Vector2f pos = sf::Vector2f(borderPos.x + 2 * m_margin, borderPos.y + 2 * m_margin);
+
+  int startPos = m_outputHistory.size() - m_visibleLines + 1;  // The 1 accounts for the current input
+
+  if (startPos < 0) {
+    startPos = 0;
+  }
+
+  int nLines = 0;
+  for (int i = startPos; i < m_outputHistory.size() && nLines < m_visibleLines; ++i, ++nLines) {
+    sf::Text text = m_outputHistory.at(i);
+    text.setPosition(pos.x, pos.y);
+    target.draw(text);
+
+    int fontSize = 16;
+    pos.y += fontSize;
+  }
+
   target.draw(m_sfCurrentInput);
   target.draw(m_sfCursorMask);
 }
@@ -513,7 +520,6 @@ Console::slideClosed()
   m_sfCurrentInput.move(0, -m_slideSpeed);
   m_sfCursorMask.move(0, -m_slideSpeed);
   m_prompt.move(0, -m_slideSpeed);
-  m_sfConsoleHistory.move(0, -m_slideSpeed);
 
   // Is console fully closed?
   if (m_border.getPosition().y <= -m_border.getSize().y) {
@@ -532,7 +538,6 @@ Console::slideOpen()
   m_sfCurrentInput.move(0, m_slideSpeed);
   m_sfCursorMask.move(0, m_slideSpeed);
   m_prompt.move(0, m_slideSpeed);
-  m_sfConsoleHistory.move(0, m_slideSpeed);
 
   // Is console fully open?
   if (m_border.getPosition().y >= 0) {
@@ -553,7 +558,6 @@ Console::setClosed()
   //m_sfCurrentInput.setPosition(fontSize/2 + fontSize, -conBack.getSize().y + (conFore.getSize().y  - 2*padding) - fontSize);
   //m_sfCursorMask.setPosition(fontSize/2 + fontSize, -conBack.getSize().y + (conFore.getSize().y  - 2*padding) - fontSize);
   //indicator.setPosition(fontSize/2, -conBack.getSize().y + (conFore.getSize().y - 2*padding) - fontSize);
-  //m_sfConsoleHistory.setPosition(fontSize, -conBack.getSize().y + padding);
 
   m_state = State::CLOSED;
 }
@@ -569,7 +573,6 @@ Console::setOpen()
   //m_sfCurrentInput.setPosition(fontSize/2 + fontSize, (conFore.getSize().y - 2*padding) - fontSize);
   //m_sfCursorMask.setPosition(fontSize/2 + fontSize, (conFore.getSize().y - 2*padding) - fontSize);
   //indicator.setPosition(fontSize/2, (conFore.getSize().y - 2*padding) - fontSize);
-  //m_sfConsoleHistory.setPosition(fontSize, padding);
 
   m_state = State::OPEN;
 }

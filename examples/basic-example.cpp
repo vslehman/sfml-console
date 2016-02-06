@@ -86,7 +86,7 @@ main(int argc, char* arv[])
         if (event.key.code == sf::Keyboard::Escape) {
           window.close();
         }
-        else if (event.key.code == sf::Keyboard::Tilde) {
+        else if (event.key.code == sf::Keyboard::Tab) {
           // Open or close the console
           console.toggle();
         }

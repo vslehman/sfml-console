@@ -154,7 +154,7 @@ private:
   std::string m_tempInput;
   std::string m_cursorMask;
 
-  std::vector<std::string> m_outputHistory;
+  std::vector<sf::Text> m_outputHistory;
   std::vector<std::string> m_inputHistory;
 
   sf::RectangleShape m_border;
@@ -181,7 +181,6 @@ private:
   const sf::Font& m_font;
 
   sf::Text m_sfCurrentInput;
-  sf::Text m_sfConsoleHistory;
   sf::Text m_sfCursorMask;
 
 private:
