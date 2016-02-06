@@ -26,6 +26,9 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Window/Event.hpp>
 
+#include <algorithm>
+#include <regex>
+
 namespace sfmlConsole {
 namespace impl {
 
@@ -39,6 +42,7 @@ const char Console::CURSOR_CHARACTER = '_';
 Console::Console(const sf::RenderWindow& window)
   : m_isEnabled(false)
   , m_heightPercentage(0.25)
+  , m_slideSpeed(5)
   , m_margin(4)
   , m_visibleLines(10)
   //, minFontSize(16)
@@ -178,6 +182,21 @@ void Console::update()
   m_cursorMask += CURSOR_CHARACTER;
 
   //sfCursorMask.setString(m_cursorMask);
+
+  // Move console in or out of window
+  switch (m_state) {
+    case State::OPENING: {
+      slideOpen();
+      break;
+    }
+    case State::CLOSING: {
+      slideClosed();
+      break;
+    }
+    default: {
+      break;
+    }
+  }
 }
 
 //=============================================================================
@@ -186,6 +205,7 @@ void Console::update()
 void Console::show()
 {
   m_isEnabled = true;
+  m_state = State::OPENING;
 }
 
 //=============================================================================
@@ -194,6 +214,7 @@ void Console::show()
 void Console::hide()
 {
   m_isEnabled = false;
+  m_state = State::CLOSING;
 }
 
 //=============================================================================
@@ -202,6 +223,13 @@ void Console::hide()
 void Console::toggle()
 {
   m_isEnabled = !m_isEnabled;
+
+  if (m_state == State::CLOSED || m_state == State::CLOSING) {
+    m_state = State::OPENING;
+  }
+  else {
+    m_state = State::CLOSING;
+  }
 }
 
 //=============================================================================
@@ -410,12 +438,135 @@ void Console::clearHistory()
 }
 
 //=============================================================================
+//  Tokens tokenize()
+//-----------------------------------------------------------------------------
+ConsoleApi::CommandParameters
+tokenize(const std::string& input)
+{
+  ConsoleApi::CommandParameters tokens;
+
+  std::regex re("\\s+");
+  const int USE_MATCH_AS_SEPERATOR = -1;
+
+  std::copy(std::sregex_token_iterator(input.begin(), input.end(), re, USE_MATCH_AS_SEPERATOR),
+            std::sregex_token_iterator(),
+            std::back_inserter(tokens));
+
+  return tokens;
+}
+
+//=============================================================================
 //  void Console::enterInput()
 //-----------------------------------------------------------------------------
 void
 Console::enterInput()
 {
+  print(m_currentInput);
 
+  // Now that input has been entered, add it to history
+  m_inputHistory.push_back(m_currentInput);
+
+  // Reset the history position to scroll to newest input
+  m_inputHistoryPosition = -1;
+
+  // Tokenize input
+  ConsoleApi::CommandParameters params = tokenize(m_currentInput);
+
+  // Is there any input?
+  if (params.size() == 0) {
+    return;
+  }
+
+  // Reset prompt
+  m_currentInput.clear();
+  moveCursorToBeginning();
+
+  // Try to find a command that matches the first parameter
+  const std::string& cmd = params.front();
+  CommandMap::const_iterator it = findCommand(cmd);
+
+  if (it != m_commands.end()) {
+    // Remove command name from parameter list
+    params.erase(params.begin());
+
+    // Execute command
+    it->second(params);
+  }
+  else {
+    print("Unknown command \"" + cmd + "\"");
+  }
+}
+
+//=============================================================================
+//  void Console::slideClosed()
+//-----------------------------------------------------------------------------
+void
+Console::slideClosed()
+{
+  m_border.move(0, -m_slideSpeed);
+  m_background.move(0, -m_slideSpeed);
+  //sfCurrentInput.move(0, -m_slideSpeed);
+  //sfCursorMask.move(0, -m_slideSpeed);
+  m_prompt.move(0, -m_slideSpeed);
+  //sfConsoleHistory.move(0, -m_slideSpeed);
+
+  // Is console fully closed?
+  if (m_border.getPosition().y <= -m_border.getSize().y) {
+    setClosed();
+  }
+}
+
+//=============================================================================
+//  void Console::slideOpen()
+//-----------------------------------------------------------------------------
+void
+Console::slideOpen()
+{
+  m_border.move(0, m_slideSpeed);
+  m_background.move(0, m_slideSpeed);
+  //sfCurrentInput.move(0, m_slideSpeed);
+  //sfCursorMask.move(0, m_slideSpeed);
+  m_prompt.move(0, m_slideSpeed);
+  //sfConsoleHistory.move(0, m_slideSpeed);
+
+  // Is console fully open?
+  if (m_border.getPosition().y >= 0) {
+    setOpen();
+  }
+}
+
+//=============================================================================
+//  void Console::setClosed()
+//-----------------------------------------------------------------------------
+void
+Console::setClosed()
+{
+  //int camHeight = getCvarValue("window_height");
+
+  //conBack.setPosition(0, -conBack.getSize().y);
+  //conFore.setPosition(padding, -conBack.getSize().y + padding);
+  //sfCurrentInput.setPosition(fontSize/2 + fontSize, -conBack.getSize().y + (conFore.getSize().y  - 2*padding) - fontSize);
+  //sfCursorMask.setPosition(fontSize/2 + fontSize, -conBack.getSize().y + (conFore.getSize().y  - 2*padding) - fontSize);
+  //indicator.setPosition(fontSize/2, -conBack.getSize().y + (conFore.getSize().y - 2*padding) - fontSize);
+  //sfConsoleHistory.setPosition(fontSize, -conBack.getSize().y + padding);
+
+  m_state = State::CLOSED;
+}
+
+//=============================================================================
+//  void Console::setOpen()
+//-----------------------------------------------------------------------------
+void
+Console::setOpen()
+{
+  //conBack.setPosition(0, 0);
+  //conFore.setPosition(padding, padding);
+  //sfCurrentInput.setPosition(fontSize/2 + fontSize, (conFore.getSize().y - 2*padding) - fontSize);
+  //sfCursorMask.setPosition(fontSize/2 + fontSize, (conFore.getSize().y - 2*padding) - fontSize);
+  //indicator.setPosition(fontSize/2, (conFore.getSize().y - 2*padding) - fontSize);
+  //sfConsoleHistory.setPosition(fontSize, padding);
+
+  m_state = State::OPEN;
 }
 
 } // namespace impl

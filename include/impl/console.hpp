@@ -128,12 +128,26 @@ protected:
   virtual
   void enterInput();
 
-protected:
+private:
+  void
+  setOpen();
+
+  void
+  setClosed();
+
+  void
+  slideOpen();
+
+  void
+  slideClosed();
+
+private:
   bool m_isEnabled;
   size_t m_cursorPosition;
   size_t m_inputHistoryPosition;
   size_t m_visibleLines;
   double m_heightPercentage;
+  int m_slideSpeed;
   unsigned int m_margin;
 
   std::string m_currentInput;
@@ -152,6 +166,16 @@ protected:
   sf::Text m_prompt;
 
   CommandMap m_commands;
+
+private:
+  enum class State {
+    CLOSED = 0,
+    OPEN,
+    OPENING,
+    CLOSING
+  };
+
+  State m_state;
 
 private:
   static const uint32_t ASCII_BEGIN;
