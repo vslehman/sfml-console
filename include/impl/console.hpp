@@ -182,6 +182,7 @@ private:
 
   sf::Text m_sfCurrentInput;
   sf::Text m_sfConsoleHistory;
+  sf::Text m_sfCursorMask;
 
 private:
   static const uint32_t ASCII_BEGIN;

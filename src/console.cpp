@@ -86,9 +86,9 @@ Console::Console(const sf::RenderWindow& window, const sf::Font& font)
   m_sfCurrentInput.setCharacterSize(fontSize);
   m_sfCurrentInput.setFont(font);
 
-  //sfCursorMask.setPosition(fontSize / 2 + fontSize, (windowSize.y * m_heightPercentage  - 2 * m_margin) - fontSize);
-  //sfCursorMask.setCharacterSize(fontSize);
-  //sfCursorMask.setFont(*font);
+  m_sfCursorMask.setPosition(fontSize / 2 + fontSize, (windowSize.y * m_heightPercentage  - 2 * m_margin) - fontSize);
+  m_sfCursorMask.setCharacterSize(fontSize);
+  m_sfCursorMask.setFont(font);
 
   m_prompt.setPosition(fontSize / 2, (windowSize.y * m_heightPercentage - 2 * m_margin) - fontSize);
   m_prompt.setCharacterSize(fontSize);
@@ -188,7 +188,7 @@ void Console::update()
 
   m_cursorMask += CURSOR_CHARACTER;
 
-  //sfCursorMask.setString(m_cursorMask);
+  m_sfCursorMask.setString(m_cursorMask);
 
   // Move console in or out of window
   switch (m_state) {
@@ -323,7 +323,7 @@ Console::draw(sf::RenderTarget& target, sf::RenderStates states) const
   target.draw(m_prompt);
   target.draw(m_sfConsoleHistory);
   target.draw(m_sfCurrentInput);
-  //target.draw(sfCursorMask);
+  target.draw(m_sfCursorMask);
 }
 
 //=============================================================================
@@ -401,10 +401,8 @@ void Console::scrollInputDown()
 //-----------------------------------------------------------------------------
 void Console::moveCursorLeft()
 {
-  m_cursorPosition--;
-
-  if (m_cursorPosition < 0) {
-    moveCursorToBeginning();
+  if (m_cursorPosition > 0) {
+    m_cursorPosition--;
   }
 }
 
@@ -513,7 +511,7 @@ Console::slideClosed()
   m_border.move(0, -m_slideSpeed);
   m_background.move(0, -m_slideSpeed);
   m_sfCurrentInput.move(0, -m_slideSpeed);
-  //sfCursorMask.move(0, -m_slideSpeed);
+  m_sfCursorMask.move(0, -m_slideSpeed);
   m_prompt.move(0, -m_slideSpeed);
   m_sfConsoleHistory.move(0, -m_slideSpeed);
 
@@ -532,7 +530,7 @@ Console::slideOpen()
   m_border.move(0, m_slideSpeed);
   m_background.move(0, m_slideSpeed);
   m_sfCurrentInput.move(0, m_slideSpeed);
-  //sfCursorMask.move(0, m_slideSpeed);
+  m_sfCursorMask.move(0, m_slideSpeed);
   m_prompt.move(0, m_slideSpeed);
   m_sfConsoleHistory.move(0, m_slideSpeed);
 
@@ -553,7 +551,7 @@ Console::setClosed()
   //conBack.setPosition(0, -conBack.getSize().y);
   //conFore.setPosition(padding, -conBack.getSize().y + padding);
   //m_sfCurrentInput.setPosition(fontSize/2 + fontSize, -conBack.getSize().y + (conFore.getSize().y  - 2*padding) - fontSize);
-  //sfCursorMask.setPosition(fontSize/2 + fontSize, -conBack.getSize().y + (conFore.getSize().y  - 2*padding) - fontSize);
+  //m_sfCursorMask.setPosition(fontSize/2 + fontSize, -conBack.getSize().y + (conFore.getSize().y  - 2*padding) - fontSize);
   //indicator.setPosition(fontSize/2, -conBack.getSize().y + (conFore.getSize().y - 2*padding) - fontSize);
   //m_sfConsoleHistory.setPosition(fontSize, -conBack.getSize().y + padding);
 
@@ -569,7 +567,7 @@ Console::setOpen()
   //conBack.setPosition(0, 0);
   //conFore.setPosition(padding, padding);
   //m_sfCurrentInput.setPosition(fontSize/2 + fontSize, (conFore.getSize().y - 2*padding) - fontSize);
-  //sfCursorMask.setPosition(fontSize/2 + fontSize, (conFore.getSize().y - 2*padding) - fontSize);
+  //m_sfCursorMask.setPosition(fontSize/2 + fontSize, (conFore.getSize().y - 2*padding) - fontSize);
   //indicator.setPosition(fontSize/2, (conFore.getSize().y - 2*padding) - fontSize);
   //m_sfConsoleHistory.setPosition(fontSize, padding);
 
