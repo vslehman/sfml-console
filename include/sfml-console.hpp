@@ -32,6 +32,7 @@
 
 namespace sf {
   class Event;
+  class Font;
   class RenderWindow;
 }
 
@@ -88,7 +89,7 @@ public:
 class SfmlConsole : public ConsoleApi
 {
 public:
-  SfmlConsole(const sf::RenderWindow& window);
+  SfmlConsole(const sf::RenderWindow& window, const sf::Font& font);
 
   virtual
   ~SfmlConsole(){};

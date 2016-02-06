@@ -37,10 +37,11 @@ main(int argc, char* arv[])
   sf::RenderWindow window(sf::VideoMode(640, 480), "SFML-Console");
   sf::Event event;
   sf::Font font;
+  font.loadFromFile("fonts/SourceCodePro-Regular.otf");
 
   // Create SFML Console
   using sfmlConsole::SfmlConsole;
-  SfmlConsole console(window);
+  SfmlConsole console(window, font);
 
   // Register command "hello" which prints "world!" in the console
   console.registerCommand(
@@ -85,7 +86,7 @@ main(int argc, char* arv[])
         if (event.key.code == sf::Keyboard::Escape) {
           window.close();
         }
-        else if (event.key.code == sf::Keyboard::Space) {
+        else if (event.key.code == sf::Keyboard::Tilde) {
           // Open or close the console
           console.toggle();
         }
@@ -102,6 +103,7 @@ main(int argc, char* arv[])
 
     // Draw variable's value
     sf::Text text("Variable: " + std::to_string(variable), font);
+    text.setPosition(sf::Vector2f(0, window.getSize().y/2));
     text.setColor(sf::Color::White);
 
     window.draw(text);

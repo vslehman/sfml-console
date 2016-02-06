@@ -39,7 +39,7 @@ class Console : public ConsoleApi
 public:
   typedef std::map<const std::string, Command> CommandMap;
 
-  Console(const sf::RenderWindow& window);
+  Console(const sf::RenderWindow& window, const sf::Font& font);
 
   virtual
   ~Console(){};
@@ -176,6 +176,12 @@ private:
   };
 
   State m_state;
+
+private:
+  const sf::Font& m_font;
+
+  sf::Text m_sfCurrentInput;
+  sf::Text m_sfConsoleHistory;
 
 private:
   static const uint32_t ASCII_BEGIN;

@@ -23,6 +23,7 @@
 
 #include "console.hpp"
 
+#include <SFML/Graphics/Font.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Window/Event.hpp>
 
@@ -39,9 +40,9 @@ const char Console::CURSOR_CHARACTER = '_';
 //=============================================================================
 //  Console::Console()
 //-----------------------------------------------------------------------------
-Console::Console(const sf::RenderWindow& window)
+Console::Console(const sf::RenderWindow& window, const sf::Font& font)
   : m_isEnabled(false)
-  , m_heightPercentage(0.25)
+  , m_heightPercentage(0.50)
   , m_slideSpeed(5)
   , m_margin(4)
   , m_visibleLines(10)
@@ -55,6 +56,7 @@ Console::Console(const sf::RenderWindow& window)
   , m_tempInput("")
   , m_inputHistoryPosition(-1)
   , m_cursorPosition(0)
+  , m_font(font)
 {
   //font = &Font::getDefaultFont();
 
@@ -76,9 +78,11 @@ Console::Console(const sf::RenderWindow& window)
   m_background.setPosition(m_margin, m_margin);
   m_background.setFillColor(m_backgroundColor);
 
-  //sfCurrentInput.setPosition(fontSize / 2 + fontSize, (windowSize.y * m_heightPercentage  - 2 * m_margin) - fontSize);
-  //sfCurrentInput.setCharacterSize(fontSize);
-  //sfCurrentInput.setFont(*font);
+  m_visibleLines = (m_background.getSize().y - 3 * fontSize) / fontSize;
+
+  m_sfCurrentInput.setPosition(fontSize / 2 + fontSize, (windowSize.y * m_heightPercentage  - 2 * m_margin) - fontSize);
+  m_sfCurrentInput.setCharacterSize(fontSize);
+  m_sfCurrentInput.setFont(font);
 
   //sfCursorMask.setPosition(fontSize / 2 + fontSize, (windowSize.y * m_heightPercentage  - 2 * m_margin) - fontSize);
   //sfCursorMask.setCharacterSize(fontSize);
@@ -87,12 +91,12 @@ Console::Console(const sf::RenderWindow& window)
   m_prompt.setPosition(fontSize / 2, (windowSize.y * m_heightPercentage - 2 * m_margin) - fontSize);
   m_prompt.setCharacterSize(fontSize);
   m_prompt.setString(">");
-  //m_prompt.setFont(*font);
+  m_prompt.setFont(font);
   m_prompt.setColor(sf::Color::White);
 
-  //sfConsoleHistory.setPosition(fontSize, (windowSize.y * m_heightPercentage  - 2 * m_margin) - fontSize);
-  //sfConsoleHistory.setCharacterSize(fontSize);
-  //sfConsoleHistory.setFont(*font);
+  m_sfConsoleHistory.setPosition(fontSize, (windowSize.y * m_heightPercentage  - 2 * m_margin) - fontSize);
+  m_sfConsoleHistory.setCharacterSize(fontSize);
+  m_sfConsoleHistory.setFont(font);
 }
 
 //=============================================================================
@@ -155,8 +159,8 @@ Console::handleEvent(const sf::Event& event)
 void Console::update()
 {
 
-  //sfCurrentInput.setString(m_currentInput);
-  //sfConsoleHistory.setPosition(m_margin, m_margin);
+  m_sfCurrentInput.setString(m_currentInput);
+  m_sfConsoleHistory.setPosition(2 * m_margin, 2 * m_margin);
 
   int startPos = m_outputHistory.size() - m_visibleLines + 1;  // The 1 accounts for the current input
 
@@ -164,13 +168,14 @@ void Console::update()
     startPos = 0;
   }
 
-  std::string m_outputHistoryString;
+  std::string outputHistoryString;
 
-  for (int i = startPos; i < m_outputHistory.size(); i++) {
-    m_outputHistoryString += m_outputHistory.at(i) + "\n";
+  int nLines = 0;
+  for (int i = startPos; i < m_outputHistory.size() && nLines < m_visibleLines; ++i, ++nLines) {
+    outputHistoryString += m_outputHistory.at(i) + "\n";
   }
 
-  //sfConsoleHistory.setString(m_outputHistoryString);
+  m_sfConsoleHistory.setString(outputHistoryString);
 
   // Calculate cursor offset and apply it to string
   m_cursorMask = "";
@@ -313,9 +318,9 @@ Console::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
   target.draw(m_border);
   target.draw(m_background);
-  //target.draw(indicator);
-  //target.draw(sfConsoleHistory);
-  //target.draw(sfCurrentInput);
+  target.draw(m_prompt);
+  target.draw(m_sfConsoleHistory);
+  target.draw(m_sfCurrentInput);
   //target.draw(sfCursorMask);
 }
 
@@ -505,10 +510,10 @@ Console::slideClosed()
 {
   m_border.move(0, -m_slideSpeed);
   m_background.move(0, -m_slideSpeed);
-  //sfCurrentInput.move(0, -m_slideSpeed);
+  m_sfCurrentInput.move(0, -m_slideSpeed);
   //sfCursorMask.move(0, -m_slideSpeed);
   m_prompt.move(0, -m_slideSpeed);
-  //sfConsoleHistory.move(0, -m_slideSpeed);
+  m_sfConsoleHistory.move(0, -m_slideSpeed);
 
   // Is console fully closed?
   if (m_border.getPosition().y <= -m_border.getSize().y) {
@@ -524,10 +529,10 @@ Console::slideOpen()
 {
   m_border.move(0, m_slideSpeed);
   m_background.move(0, m_slideSpeed);
-  //sfCurrentInput.move(0, m_slideSpeed);
+  m_sfCurrentInput.move(0, m_slideSpeed);
   //sfCursorMask.move(0, m_slideSpeed);
   m_prompt.move(0, m_slideSpeed);
-  //sfConsoleHistory.move(0, m_slideSpeed);
+  m_sfConsoleHistory.move(0, m_slideSpeed);
 
   // Is console fully open?
   if (m_border.getPosition().y >= 0) {
@@ -545,10 +550,10 @@ Console::setClosed()
 
   //conBack.setPosition(0, -conBack.getSize().y);
   //conFore.setPosition(padding, -conBack.getSize().y + padding);
-  //sfCurrentInput.setPosition(fontSize/2 + fontSize, -conBack.getSize().y + (conFore.getSize().y  - 2*padding) - fontSize);
+  //m_sfCurrentInput.setPosition(fontSize/2 + fontSize, -conBack.getSize().y + (conFore.getSize().y  - 2*padding) - fontSize);
   //sfCursorMask.setPosition(fontSize/2 + fontSize, -conBack.getSize().y + (conFore.getSize().y  - 2*padding) - fontSize);
   //indicator.setPosition(fontSize/2, -conBack.getSize().y + (conFore.getSize().y - 2*padding) - fontSize);
-  //sfConsoleHistory.setPosition(fontSize, -conBack.getSize().y + padding);
+  //m_sfConsoleHistory.setPosition(fontSize, -conBack.getSize().y + padding);
 
   m_state = State::CLOSED;
 }
@@ -561,10 +566,10 @@ Console::setOpen()
 {
   //conBack.setPosition(0, 0);
   //conFore.setPosition(padding, padding);
-  //sfCurrentInput.setPosition(fontSize/2 + fontSize, (conFore.getSize().y - 2*padding) - fontSize);
+  //m_sfCurrentInput.setPosition(fontSize/2 + fontSize, (conFore.getSize().y - 2*padding) - fontSize);
   //sfCursorMask.setPosition(fontSize/2 + fontSize, (conFore.getSize().y - 2*padding) - fontSize);
   //indicator.setPosition(fontSize/2, (conFore.getSize().y - 2*padding) - fontSize);
-  //sfConsoleHistory.setPosition(fontSize, padding);
+  //m_sfConsoleHistory.setPosition(fontSize, padding);
 
   m_state = State::OPEN;
 }
