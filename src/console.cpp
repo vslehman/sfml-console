@@ -37,6 +37,8 @@ const uint32_t Console::ASCII_BEGIN = 0x1F;
 const uint32_t Console::ASCII_END   = 0x7D;
 const char Console::CURSOR_CHARACTER = '_';
 
+const int INPUT_HISTORY_NO_POSITION = -1;
+
 //=============================================================================
 //  Console::Console()
 //-----------------------------------------------------------------------------
@@ -54,7 +56,7 @@ Console::Console(const sf::RenderWindow& window, const sf::Font& font)
   , m_currentInput("")
   , m_cursorMask("")
   , m_tempInput("")
-  , m_inputHistoryPosition(-1)
+  , m_inputHistoryPosition(INPUT_HISTORY_NO_POSITION)
   , m_cursorPosition(0)
   , m_font(font)
 {
@@ -358,7 +360,7 @@ void Console::scrollInputUp()
     return;
   }
 
-  if (m_inputHistoryPosition == -1) {
+  if (m_inputHistoryPosition == INPUT_HISTORY_NO_POSITION) {
     m_tempInput = m_currentInput;
     m_inputHistoryPosition = (int)m_inputHistory.size() - 1;
   }
@@ -378,14 +380,14 @@ void Console::scrollInputUp()
 //-----------------------------------------------------------------------------
 void Console::scrollInputDown()
 {
-  if (m_inputHistory.size() == 0 || m_inputHistoryPosition == -1) {
+  if (m_inputHistory.size() == 0 || m_inputHistoryPosition == INPUT_HISTORY_NO_POSITION) {
     return;
   }
 
   // If position is bottom of queue
   if (m_inputHistoryPosition == m_inputHistory.size() - 1) {
     m_currentInput = m_tempInput;
-    m_inputHistoryPosition = -1;
+    m_inputHistoryPosition = INPUT_HISTORY_NO_POSITION;
     return;
   }
   else {
@@ -472,7 +474,7 @@ Console::enterInput()
   m_inputHistory.push_back(m_currentInput);
 
   // Reset the history position to scroll to newest input
-  m_inputHistoryPosition = -1;
+  m_inputHistoryPosition = INPUT_HISTORY_NO_POSITION;
 
   // Tokenize input
   ConsoleApi::CommandParameters params = tokenize(m_currentInput);

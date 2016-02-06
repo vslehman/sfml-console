@@ -144,7 +144,7 @@ private:
 private:
   bool m_isEnabled;
   size_t m_cursorPosition;
-  size_t m_inputHistoryPosition;
+  int m_inputHistoryPosition;
   size_t m_visibleLines;
   double m_heightPercentage;
   int m_slideSpeed;
