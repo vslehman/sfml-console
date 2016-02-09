@@ -26,6 +26,8 @@
 
 #include "../sfml-console.hpp"
 
+#include "../style.hpp"
+
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/Graphics/Text.hpp>
 #include <SFML/Window/Event.hpp>
@@ -40,7 +42,9 @@ class Console : public ConsoleApi
 public:
   typedef std::map<const std::string, Command> CommandMap;
 
-  Console(const sf::RenderWindow& window, const sf::Font& font);
+  Console(const sf::RenderWindow& window,
+          const sf::Font& font,
+          Style style = Style::Default);
 
   virtual
   ~Console(){};
@@ -147,14 +151,13 @@ private:
   onWindowResize(const sf::Vector2u& windowSize);
 
 private:
+  Style m_style;
+
   bool m_isEnabled;
   size_t m_cursorPosition;
-  size_t m_fontSize;
   int m_inputHistoryPosition;
   size_t m_visibleLines;
-  double m_heightPercentage;
   int m_slideSpeed;
-  unsigned int m_margin;
 
   std::string m_currentInput;
   std::string m_tempInput;
@@ -165,9 +168,6 @@ private:
 
   sf::RectangleShape m_border;
   sf::RectangleShape m_background;
-
-  sf::Color m_borderColor;
-  sf::Color m_backgroundColor;
 
   sf::Text m_prompt;
 

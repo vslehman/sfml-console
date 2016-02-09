@@ -3,7 +3,7 @@ CFLAGS=-std=c++11 -g
 INCLUDES=-I include/ -I include/impl/ -I/usr/local/include/
 FRAMEWORKS=-F /Library/Frameworks/ -framework sfml-graphics -framework sfml-window -framework sfml-system
 #SRC=$(wildcard src/**/*.cpp) $(wildcard src/*.cpp) 
-SRC=src/sfml-console.cpp src/console.cpp
+SRC=src/sfml-console.cpp src/console.cpp src/style.cpp
 BIN_DIR=bin
 
 
