@@ -457,10 +457,9 @@ tokenize(const std::string& input)
 {
   ConsoleApi::CommandParameters tokens;
 
-  std::regex re("\\s+");
-  const int USE_MATCH_AS_SEPERATOR = -1;
+  std::regex re("(\".*\")|(\'.*\')|([^\\s]?[^\\s]+)");
 
-  std::copy(std::sregex_token_iterator(input.begin(), input.end(), re, USE_MATCH_AS_SEPERATOR),
+  std::copy(std::sregex_token_iterator(input.begin(), input.end(), re),
             std::sregex_token_iterator(),
             std::back_inserter(tokens));
 
