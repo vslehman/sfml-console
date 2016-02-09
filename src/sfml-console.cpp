@@ -65,7 +65,7 @@ SfmlConsole::toggle()
 bool
 SfmlConsole::isVisible() const
 {
-  m_impl->isVisible();
+  return m_impl->isVisible();
 }
 
 void
