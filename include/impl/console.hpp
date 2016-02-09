@@ -28,6 +28,7 @@
 
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/Graphics/Text.hpp>
+#include <SFML/Window/Event.hpp>
 
 #include <map>
 
@@ -142,8 +143,13 @@ private:
   slideClosed();
 
 private:
+  void
+  onWindowResize(const sf::Vector2u& windowSize);
+
+private:
   bool m_isEnabled;
   size_t m_cursorPosition;
+  size_t m_fontSize;
   int m_inputHistoryPosition;
   size_t m_visibleLines;
   double m_heightPercentage;

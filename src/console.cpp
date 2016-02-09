@@ -49,10 +49,10 @@ Console::Console(const sf::RenderWindow& window, const sf::Font& font)
   , m_margin(4)
   , m_visibleLines(10)
   //, minFontSize(16)
-  , m_borderColor(sf::Color::Black)
+  , m_borderColor(sf::Color::White)
   , m_backgroundColor(sf::Color::Blue)
   //, font(nullptr)
-  //, fontSize(16)
+  , m_fontSize(16)
   , m_currentInput("")
   , m_cursorMask("")
   , m_tempInput("")
@@ -60,41 +60,19 @@ Console::Console(const sf::RenderWindow& window, const sf::Font& font)
   , m_cursorPosition(0)
   , m_font(font)
 {
-  //font = &Font::getDefaultFont();
-
-    // Initialize style
-  sf::Vector2u windowSize = window.getSize();
-
-  size_t fontSize = 16;
-  m_visibleLines = (windowSize.y*m_heightPercentage)/fontSize;
-
-  //if (fontSize < minFontSize) {
-  //  fontSize = minFontSize;
-  //}
-
-  m_border = sf::RectangleShape(sf::Vector2f(windowSize.x, windowSize.y*m_heightPercentage));
-  m_border.setPosition(0, 0);
+  // Initialize style
   m_border.setFillColor(m_borderColor);
-
-  m_background = sf::RectangleShape(sf::Vector2f(windowSize.x - 2 * m_margin, windowSize.y * m_heightPercentage - 2 * m_margin));
-  m_background.setPosition(m_margin, m_margin);
   m_background.setFillColor(m_backgroundColor);
 
-  m_visibleLines = (m_background.getSize().y - fontSize) / fontSize;
-
-  m_sfCurrentInput.setPosition(fontSize / 2 + fontSize, (windowSize.y * m_heightPercentage  - 2 * m_margin) - fontSize);
-  m_sfCurrentInput.setCharacterSize(fontSize);
   m_sfCurrentInput.setFont(font);
-
-  m_sfCursorMask.setPosition(fontSize / 2 + fontSize, (windowSize.y * m_heightPercentage  - 2 * m_margin) - fontSize);
-  m_sfCursorMask.setCharacterSize(fontSize);
   m_sfCursorMask.setFont(font);
 
-  m_prompt.setPosition(fontSize / 2, (windowSize.y * m_heightPercentage - 2 * m_margin) - fontSize);
-  m_prompt.setCharacterSize(fontSize);
   m_prompt.setString(">");
   m_prompt.setFont(font);
   m_prompt.setColor(sf::Color::White);
+
+  // Initialize console size
+  onWindowResize(window.getSize());
 }
 
 //=============================================================================
@@ -148,6 +126,9 @@ Console::handleEvent(const sf::Event& event)
       m_currentInput.insert(m_cursorPosition, 1, static_cast<char>(event.text.unicode));
       moveCursorRight();
     }
+  }
+  else if (event.type == sf::Event::Resized) {
+    onWindowResize(sf::Vector2u(event.size.width, event.size.height));
   }
 }
 
@@ -233,10 +214,7 @@ Console::isVisible() const
 //-----------------------------------------------------------------------------
 void Console::print(const std::string& msg)
 {
-  int fontSize = 16;
-
   sf::Text text;
-  text.setCharacterSize(fontSize);
   text.setString(msg);
   text.setFont(m_font);
   text.setColor(sf::Color::White);
@@ -306,6 +284,10 @@ Console::findCommand(const std::string& name) const
 void
 Console::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
+  sf::View view(sf::FloatRect(sf::Vector2f(0, 0),
+                sf::Vector2f(target.getSize().x, target.getSize().y)));
+  target.setView(view);
+
   target.draw(m_border);
   target.draw(m_background);
   target.draw(m_prompt);
@@ -323,14 +305,16 @@ Console::draw(sf::RenderTarget& target, sf::RenderStates states) const
   for (int i = startPos; i < m_outputHistory.size() && nLines < m_visibleLines; ++i, ++nLines) {
     sf::Text text = m_outputHistory.at(i);
     text.setPosition(pos.x, pos.y);
+    text.setCharacterSize(m_fontSize);
     target.draw(text);
 
-    int fontSize = 16;
-    pos.y += fontSize;
+    pos.y += m_fontSize;
   }
 
   target.draw(m_sfCurrentInput);
   target.draw(m_sfCursorMask);
+
+  target.setView(target.getDefaultView());
 }
 
 //=============================================================================
@@ -574,6 +558,34 @@ Console::setOpen()
   //indicator.setPosition(fontSize/2, (conFore.getSize().y - 2*padding) - fontSize);
 
   m_state = State::OPEN;
+}
+
+//=============================================================================
+//  void Console::onWindowResize()
+//-----------------------------------------------------------------------------
+void
+Console::onWindowResize(const sf::Vector2u& windowSize)
+{
+  m_border.setSize(sf::Vector2f(windowSize.x, windowSize.y * m_heightPercentage));
+  m_border.setPosition(0, 0);
+
+  m_background.setSize(sf::Vector2f(windowSize.x - 2 * m_margin,
+                                    windowSize.y * m_heightPercentage - 2 * m_margin));
+  m_background.setPosition(m_margin, m_margin);
+
+  m_sfCurrentInput.setPosition(m_fontSize / 2 + m_fontSize,
+                               (windowSize.y * m_heightPercentage  - 2 * m_margin) - m_fontSize);
+  m_sfCurrentInput.setCharacterSize(m_fontSize);
+
+  m_sfCursorMask.setPosition(m_fontSize / 2 + m_fontSize,
+                             (windowSize.y * m_heightPercentage  - 2 * m_margin) - m_fontSize);
+  m_sfCursorMask.setCharacterSize(m_fontSize);
+
+  m_prompt.setPosition(m_fontSize / 2,
+                       (windowSize.y * m_heightPercentage - 2 * m_margin) - m_fontSize);
+  m_prompt.setCharacterSize(m_fontSize);
+
+  m_visibleLines = (m_background.getSize().y - m_fontSize) / m_fontSize;
 }
 
 } // namespace impl
